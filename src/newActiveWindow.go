@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"sync"
-
 	"github.com/lxn/win"
 )
 
@@ -38,26 +37,16 @@ func (l *Listener) newActiveWindowCallback(
 ) (ret uintptr) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
-
 	if idObject != OBJID_WINDOW || idChild != CHILDID_SELF {
 		return
 	}
-
 	if event == win.EVENT_OBJECT_CREATE {
 		return
 	}
-
 	if hwnd == 0 {
 		return
 	}
-
-	if getDWMactive(hwnd) {
-		// https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmsetwindowattribute
-		var policyParameter = DWMNCRP_DISABLED
-		DwmSetWindowAttribute(hwnd, DWMWA_NCRENDERING_POLICY, &policyParameter, 8)          // unsafe.Sizeof(int(0))
-		DwmSetWindowAttribute(hwnd, DWMWA_FORCE_ICONIC_REPRESENTATION, &policyParameter, 8) // unsafe.Sizeof(int(0))
-	}
-
+	applyBasicTheme(hwnd);
 	return 0
 }
 
@@ -69,13 +58,11 @@ func startListenerMessageLoop() {
 		panic(err)
 	}
 	defer win.UnhookWinEvent(EVENT_OBJECT_CREATE)
-
 	EVENT_SYSTEM_FOREGROUND, err := setActiveWindowWinEventHook(listener.newActiveWindowCallback, win.EVENT_SYSTEM_FOREGROUND)
 	if err != nil {
 		panic(err)
 	}
 	defer win.UnhookWinEvent(EVENT_SYSTEM_FOREGROUND)
-
 	var msg win.MSG
 	for win.GetMessage(&msg, 0, 0, 0) != 0 {
 		log.Println(msg)
@@ -102,6 +89,5 @@ func setActiveWindowWinEventHook(callbackFunction win.WINEVENTPROC, event uint32
 	if ret == 0 {
 		return 0, err
 	}
-
 	return ret, nil
 }

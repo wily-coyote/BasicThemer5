@@ -3,14 +3,12 @@ package main
 import (
 	"syscall"
 	"unsafe"
-
 	"github.com/lxn/win"
 )
 
 // https://github.com/KaiCoder/router/blob/712947901108692a53d37f0098cea3cd66de24c6/gopath/src/github.com/shirou/w32/dwmapi.go
 var (
 	moddwmapi = syscall.NewLazyDLL("dwmapi.dll")
-
 	procDwmGetWindowAttribute = moddwmapi.NewProc("DwmGetWindowAttribute")
 	procDwmSetWindowAttribute = moddwmapi.NewProc("DwmSetWindowAttribute")
 )
